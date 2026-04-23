@@ -4,16 +4,17 @@ import TaskInput from '../TaskInput'
 import TaskList from '../TaskList'
 import styles from './ToDoList.module.scss'
 
-// interface HandleNewTodos {
-//     (todos: Todo[]) : Todo[]
-// }
-type HandleNewTodos = (todos: Todo[]) => Todo[]
+interface HandleNewTodos {
+    (todos: Todo[]) : Todo[]
+}
+// type HandleNewTodos = (todos: Todo[]) => Todo[]
 
 const syncReactToLocal = (handleNewTodos: HandleNewTodos) => {
     const todosString = localStorage.getItem('todos')
     const todosObj: Todo[] = JSON.parse(todosString || '[]')
     const newTodosObj = handleNewTodos(todosObj)
     localStorage.setItem('todos', JSON.stringify(newTodosObj))
+    return newTodosObj
 }
 
 export default function ToDoList() {
@@ -44,14 +45,17 @@ export default function ToDoList() {
     }
 
     const handleDoneTodo = (id: string, done: boolean) => {
-        setTodos(prev => {
-            return prev.map(todo => {
+        const handler = (todosObj: Todo[]) => {
+            return todosObj.map(todo => {
                 if (todo.id ==id) {
                     return {...todo, done}
                 } 
                 return todo
             })
-        })
+        }
+        setTodos(handler)
+        syncReactToLocal(handler)
+
     }
 
     const startEditTodo = (id: string) => {
